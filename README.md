@@ -59,7 +59,7 @@ flowchart TB
     API --> ML[Joblib models<br/>quality + issue prediction]
     API --> DB[(SQL database<br/>SQLite local / Postgres production)]
     API --> Imagga[Imagga API<br/>categories + tags]
-    API --> Health[/health]
+    API --> Health["/health"]
 
     subgraph Railway
       API
