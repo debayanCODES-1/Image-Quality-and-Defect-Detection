@@ -34,7 +34,7 @@ An AI-assisted image inspection workspace that scores visual quality, detects li
 flowchart LR
     A[Select image] --> B{Valid image?}
     B -- No --> C[Show upload error]
-    B -- Yes --> D[POST /analyze]
+    B -- Yes --> D[Send analyze request]
     D --> E[Decode with OpenCV]
     E --> F[Extract visual features]
     F --> G[Local quality and issue models]
@@ -51,17 +51,17 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-    User((User)) --> Browser[React PWA<br/>Vite + Axios]
-    Browser -->|HTTPS / JSON + multipart| API[FastAPI service]
-    Browser -.->|GET /api/* through nginx| Proxy[Nginx reverse proxy]
+    User((User)) --> Browser[React PWA - Vite and Axios]
+    Browser -->|HTTPS JSON and multipart| API[FastAPI service]
+    Browser -.->|API requests through nginx| Proxy[Nginx reverse proxy]
     Proxy --> API
-    API --> CV[OpenCV + NumPy<br/>feature extraction]
-    API --> ML[Joblib models<br/>quality + issue prediction]
-    API --> DB[(SQL database<br/>SQLite local / Postgres production)]
-    API --> Imagga[Imagga API<br/>categories + tags]
-    API --> Health["/health"]
+    API --> CV[OpenCV and NumPy feature extraction]
+    API --> ML[Joblib quality and issue models]
+    API --> DB[(SQL database - SQLite local or Postgres production)]
+    API --> Imagga[Imagga API - categories and tags]
+    API --> Health[Health endpoint]
 
-    subgraph Railway
+    subgraph Railway deployment
       API
       DB
       Proxy
@@ -92,18 +92,18 @@ sequenceDiagram
     participant D as Database
 
     U->>F: Choose image
-    F->>B: POST /analyze (multipart file)
+    F->>B: Upload image for analysis
     B->>B: Validate extension and decode bytes
     B->>L: Analyze image matrix
-    L-->>B: score, label, issues, features
+    L-->>B: Score, label, issues, and features
     opt Imagga credentials configured
-      B->>I: Categories + tags requests
+      B->>I: Request categories and tags
       I-->>B: Semantic enrichment
     end
     B->>D: Save local analysis record
     D-->>B: Persisted record id
-    B-->>F: AnalysisResponse
-    F-->>U: Score, label, issues, tags
+    B-->>F: Analysis response
+    F-->>U: Score, label, issues, and tags
 ```
 
 ## Repository Map
@@ -113,7 +113,7 @@ sequenceDiagram
 ├── backend/
 │   ├── app/
 │   │   ├── database.py       # SQLAlchemy engine and history model
-│   │   ├── features.py       # OpenCV / NumPy feature extraction
+│   │   ├── features.py       # OpenCV and NumPy feature extraction
 │   │   ├── imagga.py         # Optional Imagga client
 │   │   ├── main.py           # FastAPI routes and orchestration
 │   │   ├── models.py         # Quality and issue inference
@@ -238,7 +238,7 @@ flowchart LR
     GitHub[GitHub main] --> FrontendBuild[Railway frontend service]
     GitHub --> BackendBuild[Railway backend service]
     FrontendBuild --> FrontendURL[Public frontend URL]
-    FrontendURL -->|VITE_API_BASE_URL| BackendURL[Public backend URL]
+    FrontendURL -->|Build API URL| BackendURL[Public backend URL]
     BackendBuild --> Database[(Railway Postgres)]
     BackendBuild --> Imagga[Imagga credentials]
 ```
@@ -260,13 +260,13 @@ flowchart LR
 4. Select Dockerfile deployment. `frontend/railway.toml` is already included.
 5. Generate a public domain and add that exact origin to backend `ALLOWED_ORIGINS`.
 
-### Production checklist
+## Production Checklist
 
-- [ ] Rotate any credentials that were ever pasted into chat or committed locally.
+- [ ] Rotate credentials that were ever pasted into chat or committed locally.
 - [ ] Use managed Postgres instead of SQLite for multi-instance production.
 - [ ] Set `ALLOWED_ORIGINS` to the real frontend origin, not `*`.
-- [ ] Confirm the backend `/health` check is green.
-- [ ] Upload a test image and verify `/analyze`, `/history`, and Imagga enrichment.
+- [ ] Confirm the backend health check is green.
+- [ ] Upload a test image and verify analysis, history, and Imagga enrichment.
 - [ ] Confirm the frontend install prompt works over HTTPS.
 - [ ] Add rate limiting and upload-size limits before opening the API broadly.
 
@@ -276,7 +276,7 @@ flowchart LR
 - The frontend never receives or stores the Imagga secret.
 - CORS is configurable per deployment; the development default is permissive for local testing.
 - Uploaded files are decoded in memory and are not written to disk by the API.
-- A production hardening pass should add authentication, request throttling, file-size limits, structured logging, and retention controls.
+- Production hardening should add authentication, request throttling, file-size limits, structured logging, and retention controls.
 
 ## Milestones
 
