@@ -1,0 +1,18 @@
+{
+  "name": "Image Quality Check",
+  "short_name": "Quality Check",
+  "description": "Analyze image quality, defects, and visual signals.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#d9e5ea",
+  "theme_color": "#1b1d22",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

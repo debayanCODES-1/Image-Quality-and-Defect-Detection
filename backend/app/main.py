@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import Any, Dict
 
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
@@ -9,13 +10,16 @@ from sqlalchemy.orm import Session
 
 from . import database, models, schemas
 from .database import get_db
+from .imagga import imagga
 
 app = FastAPI(title="AI Image Quality Assessment API", version="0.1.0")
 
+allowed_origins = [origin.strip() for origin in os.getenv("ALLOWED_ORIGINS", "*").split(",") if origin.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=allowed_origins,
+    allow_credentials=allowed_origins != ["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -51,6 +55,7 @@ async def analyze_image(file: UploadFile = File(...), db: Session = Depends(get_
         raise HTTPException(status_code=400, detail="Unreadable or corrupt image")
 
     result = models.analyzer.analyze(image)
+    imagga_result = imagga.analyze(contents, file.filename or "image", file.content_type)
 
     record = database.AnalysisResult(
         filename=file.filename,
@@ -70,6 +75,9 @@ async def analyze_image(file: UploadFile = File(...), db: Session = Depends(get_
             "issues": result["issues"],
             "features": result["features"],
             "model_status": result["model_status"],
+            "imagga_status": imagga_result["status"],
+            "categories": imagga_result["categories"],
+            "tags": imagga_result["tags"],
         }
     )
 

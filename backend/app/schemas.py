@@ -39,6 +39,9 @@ class AnalysisResponse(BaseModel):
     issues: List[IssueResult]
     features: Dict[str, Any]
     model_status: str = Field(default="fallback")
+    imagga_status: str = Field(default="disabled")
+    categories: List[Dict[str, Any]] = Field(default_factory=list)
+    tags: List[Dict[str, Any]] = Field(default_factory=list)
 
 
 class HistoryItem(BaseModel):
